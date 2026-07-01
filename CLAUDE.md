@@ -1,4 +1,4 @@
-# 4cs-secbrain — Claude conventions
+# 4cs-security-buddy — Claude conventions
 
 This repo is a shared knowledge base for cloud-native security work, organized along two axes:
 

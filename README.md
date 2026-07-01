@@ -1,4 +1,4 @@
-# cloud-native-security-brain (4cs-secbrain)
+# cloud-native-security-brain (4cs-security-buddy)
 
 A shared team knowledge base for cloud-native security, organized along two axes:
 
