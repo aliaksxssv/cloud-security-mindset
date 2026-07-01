@@ -49,6 +49,25 @@ memory/security/
 - **Honour the pin.** If a `**Active control:**` or `**Active domain:**` line appears earlier in the transcript, all subsequent work stays scoped to that `{control, scope}` pair. Cite both briefly when making non-obvious recommendations (e.g. *"aligned with SEC03-BP02 / cluster"*).
 - **Scope matters as much as control.** Don't mix advice from different scopes in one answer unless the pin is `scope: cross`. If the user's question wanders into another scope, surface the mismatch and offer to switch scope.
 - **Don't re-invoke `security-topic` mid-discussion.** Only on a fresh new-topic signal — or on a scope-only switch ("switch scope to <X>"), which uses a shorter path.
-- **Don't dump the catalog into main context.** The skill's subagent handles matching; only the structured match comes back.
+- **Skills with catalog/reference files must read them via subagents.** Any skill in `.claude/skills/*/reference/` holds multi-entry reference data where only one entry ends up used. Route both the catalog scan and (where applicable) the materialization of the chosen entry through subagents so the unchosen entries never enter main context. Applies to `security-topic` (Security Pillar catalog → matcher subagent) and `buddy` (personas catalog → summarizer + materializer subagents), and to any future skill of the same shape.
 - **The pin is transcript-only.** It doesn't survive new sessions. Durable knowledge belongs in `memory/security/<domain>/<sec-id>/<scope>.md`.
 - **Project vs user memory.** Default save destination is project (shared) — the whole point of this repo is collaboration. Only fall back to user memory when the user explicitly chooses it or the content is personal/private.
+
+## Agent persona (DISC "buddy")
+
+At the very start of every new conversation, before your first substantive response, check for `agent_persona.md` in your auto-memory directory (the path is given in the "auto memory" section of your system prompt).
+
+- **If it exists**, `Read` it once and adopt the described tone for the rest of the session. Do not announce the load; just start speaking in that voice.
+- **If it does not exist**, invoke the `buddy` skill at `.claude/skills/buddy/` so the user can pick one. The skill writes the file and hands back the adopted persona block.
+
+The persona modifies **tone and style only**. It never overrides these guardrails:
+
+- No emojis unless the user explicitly asks for them.
+- Cite `file_path:line_number` when referencing code.
+- Confirm before destructive or hard-to-reverse actions.
+- Prefer edits to new files; don't create documentation files unless asked.
+- Honour any `**Active control:**` / `**Active domain:**` pin from `security-topic`.
+
+The user can change persona at any time by saying "change buddy" / "смени бадди" — that re-invokes the `buddy` skill, which overwrites the persona file. To reset to no persona, delete `agent_persona.md`.
+
+The subagent-only rule for `.claude/skills/*/reference/*.md` (see the working-conventions section above) applies here too: `personas.md` is read by the skill's subagents, never main context.
