@@ -27,6 +27,8 @@ Ground every delivery conversation in these principles. They answer most quick q
 | Epic/project too big, planning granularity, unknowns | Splitting patterns, spikes, MVP, planning altitude | `references/decomposition.md` |
 | Leadership style, difficult conversations, giving feedback | Servant leadership (10 attributes), DISC adaptation, STAR/AR | `references/servant-leadership.md` |
 
+> **DISC disambiguation:** `references/servant-leadership.md` covers adapting to *other people's* DISC profiles when leading or coaching them. The agent's own voice is governed separately by the `buddy` persona (`.claude/skills/buddy/`), which already carries a servant-leadership stance — don't conflate the two.
+
 ## Delegation protocol — keep the main context lean
 
 Substantial framework work MUST run in a sub-agent, not in the main conversation. This includes: drafting OKRs, RICE-scoring a backlog, decomposing an epic or project, preparing a coaching or feedback conversation, or producing a delivery plan.

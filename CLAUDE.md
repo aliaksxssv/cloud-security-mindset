@@ -1,9 +1,9 @@
-# 4cs-secbrain — Claude conventions
+# cloud-security-mindset — Claude conventions
 
 This repo is a shared knowledge base for cloud-native security work, organized along two axes:
 
 1. **Control** — a specific best practice from the [AWS Well-Architected Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html) (`SECxx-BPyy`).
-2. **Scope** — one of the **4Cs** that name the repo: **code, cloud, cluster, container** (plus `cross` for genuinely multi-scope discussions).
+2. **Scope** — one of the **4Cs** of cloud-native security: **code, cloud, cluster, container** (plus `cross` for genuinely multi-scope discussions).
 
 Every discussion is pinned to a `{control, scope}` pair. The skill at `.claude/skills/security-topic/` enforces this.
 
@@ -13,7 +13,7 @@ Activates whenever the user signals a new topic (e.g. "new topic", "let's discus
 
 1. **Closes the previous discussion** — drafts a 3–6 bullet summary and asks whether to save it. Destinations:
    - **Project memory** (shared, git-tracked) → `memory/security/<domain>/<sec-id>/<scope>.md` *(appended, never overwritten)*.
-   - **User memory** (private) → `~/.claude/projects/-Users-aliaksxssv-Documents-github-4cs-secbrain/memory/`.
+   - **User memory** (private) → the auto-memory directory named in the memory section of the system prompt.
 2. **Maps the new topic** via an `Explore` subagent against the catalog at `.claude/skills/security-topic/reference/security-pillar.md`. The subagent returns both the BP control AND the detected scope (with confidence and cues).
 3. **Confirms** both axes with the user. If scope is unknown or low-confidence, the skill explicitly asks before pinning.
 4. **Loads prior notes** scope-first: primary file (`<domain>/<sec-id>/<scope>.md`), then sibling-scope files for the same control.
@@ -49,7 +49,7 @@ memory/security/
 - **Honour the pin.** If a `**Active control:**` or `**Active domain:**` line appears earlier in the transcript, all subsequent work stays scoped to that `{control, scope}` pair. Cite both briefly when making non-obvious recommendations (e.g. *"aligned with SEC03-BP02 / cluster"*).
 - **Scope matters as much as control.** Don't mix advice from different scopes in one answer unless the pin is `scope: cross`. If the user's question wanders into another scope, surface the mismatch and offer to switch scope.
 - **Don't re-invoke `security-topic` mid-discussion.** Only on a fresh new-topic signal — or on a scope-only switch ("switch scope to <X>"), which uses a shorter path.
-- **Skills with catalog/reference files must read them via subagents.** Any skill in `.claude/skills/*/reference/` holds multi-entry reference data where only one entry ends up used. Route both the catalog scan and (where applicable) the materialization of the chosen entry through subagents so the unchosen entries never enter main context. Applies to `security-topic` (Security Pillar catalog → matcher subagent) and `buddy` (personas catalog → summarizer + materializer subagents), and to any future skill of the same shape.
+- **Skills with catalog/reference files must read them via subagents.** Any skill in `.claude/skills/*/reference/` or `.claude/skills/*/references/` holds multi-entry reference data where only one entry ends up used. Route both the catalog scan and (where applicable) the materialization of the chosen entry through subagents so the unchosen entries never enter main context. Applies to `security-topic` (Security Pillar catalog → matcher subagent), `buddy` (personas catalog → summarizer + materializer subagents), `delivery-management` (framework references → delegation-protocol subagents), and to any future skill of the same shape.
 - **The pin is transcript-only.** It doesn't survive new sessions. Durable knowledge belongs in `memory/security/<domain>/<sec-id>/<scope>.md`.
 - **Project vs user memory.** Default save destination is project (shared) — the whole point of this repo is collaboration. Only fall back to user memory when the user explicitly chooses it or the content is personal/private.
 

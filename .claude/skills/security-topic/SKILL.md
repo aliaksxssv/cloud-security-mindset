@@ -28,7 +28,7 @@ Do **not** re-invoke from scratch for follow-up turns inside an already-pinned d
 - Project (shared, git-tracked) memory tree:
   `memory/security/<domain-slug>/<sec-id-lowercased>/<scope>.md`
 - User (private) memory directory:
-  `/Users/aliaksxssv/.claude/projects/-Users-aliaksxssv-Documents-github-4cs-secbrain/memory/`
+  the auto-memory directory named in the memory section of the system prompt (`<auto-memory-dir>` below).
 
 ## Workflow
 
@@ -65,7 +65,7 @@ If present:
      **Decisions / outcomes:** <bullets>
      ```
    - Author from Bash `git config user.name`; fall back to `claude session` if empty.
-4. **User save**: write to `/Users/aliaksxssv/.claude/projects/-Users-aliaksxssv-Documents-github-4cs-secbrain/memory/discussion-<sec-id-lowercased>-<scope>-<short-slug>.md` with the global memory frontmatter (`type: project`); update `MEMORY.md` with a one-line index entry.
+4. **User save**: write to `<auto-memory-dir>/discussion-<sec-id-lowercased>-<scope>-<short-slug>.md` with the global memory frontmatter (`type: project`); update `MEMORY.md` with a one-line index entry.
 5. **Edit**: present the draft; user revises; then re-ask save destination.
 6. **Skip**: discard and proceed.
 
@@ -77,8 +77,8 @@ Spawn an `Explore` subagent (read-only, keeps catalog out of main context):
 
 - **description**: `Map topic to Security Pillar control + 4Cs scope`
 - **subagent_type**: `Explore`
-- **prompt** (verbatim):
-  > Read `/Users/aliaksxssv/Documents/github/4cs-secbrain/.claude/skills/security-topic/reference/security-pillar.md` and follow the "Matcher instructions" section at the bottom.
+- **prompt** (verbatim; substitute `<REPO_ROOT>` with the repo root's absolute path):
+  > Read `<REPO_ROOT>/.claude/skills/security-topic/reference/security-pillar.md` and follow the "Matcher instructions" section at the bottom.
   >
   > User topic: `<paste the user's exact topic statement>`
   >

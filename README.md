@@ -1,9 +1,9 @@
-# cloud-native-security-brain (4cs-secbrain)
+# cloud-security-mindset
 
 A shared team knowledge base for cloud-native security, organized along two axes:
 
 - **What** — a specific control from the [AWS Well-Architected Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html) (`SECxx-BPyy`, e.g. *SEC08-BP02 Enforce encryption at rest*).
-- **Where** — one of the **4Cs** that name this repo:
+- **Where** — one of the **4Cs** of cloud-native security:
   - **Code** — application source: SAST/DAST/SCA, dependencies, secrets in code, secure-coding, PR review
   - **Cloud** — cloud-provider services: AWS/GCP/Azure resources, IAM, KMS, networking, account/org guardrails
   - **Cluster** — orchestrator: Kubernetes (EKS/GKE/AKS), RBAC, NetworkPolicies, control-plane, service mesh
