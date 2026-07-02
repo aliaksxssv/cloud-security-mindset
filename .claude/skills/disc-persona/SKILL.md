@@ -1,5 +1,5 @@
 ---
-name: buddy
+name: disc-persona
 description: Pick or change the agent's DISC "buddy" persona (Dominance / Influence / Steadiness / Compliance) that governs communication tone for the rest of the session. Invoke when the user says any of "pick a buddy", "choose a persona", "change buddy", "switch buddy", "change persona", "switch persona", "какой у тебя психотип", "выбери бадди", "смени бадди", "смени персону", or when CLAUDE.md hands off because no persona file was found at conversation start. The chosen persona persists across sessions via a file in the user's private memory directory.
 ---
 
@@ -20,7 +20,7 @@ Do **not** invoke on every turn once a persona is set. Once `agent_persona.md` e
 ## Files this skill uses
 
 - Personas catalog (read only by subagents, never main context):
-  `.claude/skills/buddy/reference/personas.md` — this skill lives at `.claude/skills/buddy/` in the repo root; resolve to an absolute path before spawning.
+  `.claude/skills/disc-persona/reference/personas.md` — this skill lives at `.claude/skills/disc-persona/` in the repo root; resolve to an absolute path before spawning.
 - Persona file (per-user, private, overwritten on change):
   `<auto-memory-dir>/agent_persona.md` — where `<auto-memory-dir>` is the path named in the "auto memory" section of your system prompt.
 
@@ -47,7 +47,7 @@ ls <auto-memory-dir>/agent_persona.md 2>/dev/null
 
 Spawn an `Explore` subagent to read the personas catalog and return only compact per-type previews. Verbatim prompt to give the subagent (substitute `<REPO_ROOT>` with the repo root's absolute path):
 
-> Read `<REPO_ROOT>/.claude/skills/buddy/reference/personas.md`. For each of the four persona types (D, I, S, C), return **only** the following structured block — no full persona text, no guardrails:
+> Read `<REPO_ROOT>/.claude/skills/disc-persona/reference/personas.md`. For each of the four persona types (D, I, S, C), return **only** the following structured block — no full persona text, no guardrails:
 >
 > ```
 > D: <display name>
@@ -95,7 +95,7 @@ Restate the pick in one line — display name + summary — without expanding in
 
 Spawn a **general-purpose** subagent to extract the full block for the picked type and write it to the persona file. Verbatim prompt template (substitute `<TYPE>`, `<AUTO_MEMORY_DIR>`, and `<REPO_ROOT>`):
 
-> Read `<REPO_ROOT>/.claude/skills/buddy/reference/personas.md`. Extract **only** the following three things:
+> Read `<REPO_ROOT>/.claude/skills/disc-persona/reference/personas.md`. Extract **only** the following three things:
 >
 > 1. The section titled `### <TYPE> — full persona block` (its body, starting after the heading, up to but not including the next `---`).
 > 2. The section titled `## Servant-leadership stance (appended to every materialized persona file, verbatim)` — its body only (skip the parenthetical in the heading).
@@ -131,8 +131,8 @@ Treat the returned block as the operative style guide for the rest of the sessio
 
 ## Notes
 
-- **Persona modifies tone/style only.** It does not override the guardrails (no emojis unless asked, `file_path:line_number` citations, confirm destructive actions, prefer edits to new files, honor `security-topic` pins, etc.). The materialized persona file ends with the guardrails paragraph as a reminder — trust it.
+- **Persona modifies tone/style only.** It does not override the guardrails (no emojis unless asked, `file_path:line_number` citations, confirm destructive actions, prefer edits to new files, honor `security-compass` pins, etc.). The materialized persona file ends with the guardrails paragraph as a reminder — trust it.
 - **Persona is per-user, not shared.** Lives in the user's auto-memory directory, not in the git-tracked `memory/` tree.
 - **No `MEMORY.md` index entry needed.** The path is fixed and known to CLAUDE.md; indexing adds nothing.
 - **Reset.** To clear the persona and force a fresh pick on next session, delete `<auto-memory-dir>/agent_persona.md` or say "change buddy".
-- **Do not read `reference/personas.md` directly from main context.** If a future step needs details from the catalog, spawn a subagent for it — same discipline as the `security-topic` skill uses for its Security Pillar catalog.
+- **Do not read `reference/personas.md` directly from main context.** If a future step needs details from the catalog, spawn a subagent for it — same discipline as the `security-compass` skill uses for its Security Pillar catalog.

@@ -2,7 +2,7 @@
 
 Authoritative source: https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html
 
-This file is loaded by the `security-topic` skill's matcher subagent to map a user topic to one specific control. Keep the structure stable so the matcher can rely on it.
+This file is loaded by the `security-compass` skill's matcher subagent to map a user topic to one specific control. Keep the structure stable so the matcher can rely on it.
 
 Hierarchy used throughout this catalog:
 

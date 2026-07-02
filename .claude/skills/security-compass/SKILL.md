@@ -1,5 +1,5 @@
 ---
-name: security-topic
+name: security-compass
 description: Anchor every discussion to BOTH (a) a specific AWS Well-Architected Security Pillar control (SECxx-BPyy) and (b) one of the 4Cs scopes — code, cloud, cluster, container (or cross). Invoke when the user signals a new topic — phrases like "new topic", "new discussion", "let's discuss", "I want to discuss", "talk about", "switch topic", "next topic", "start a discussion about", "change subject", or whole-domain phrasing like "discuss the whole <domain>", "review <domain>", "<domain> in general". The skill (1) closes the prior pinned discussion with a save prompt that lets the user choose project (shared via git) vs user (private) memory, (2) spawns an Explore subagent that maps the topic to a control AND detects scope from cues, (3) asks the user to confirm both axes, (4) loads prior notes — same control + same scope first, then sibling scopes, (5) pins {control, scope} for the rest of the discussion. Mid-discussion the user can say "switch scope to <X>" to re-pin scope without re-mapping the control.
 ---
 
@@ -24,7 +24,7 @@ Do **not** re-invoke from scratch for follow-up turns inside an already-pinned d
 ## Files this skill uses
 
 - Catalog (read by the matcher subagent, not by main context):
-  `.claude/skills/security-topic/reference/security-pillar.md`
+  `.claude/skills/security-compass/reference/security-pillar.md`
 - Project (shared, git-tracked) memory tree:
   `memory/security/<domain-slug>/<sec-id-lowercased>/<scope>.md`
 - User (private) memory directory:
@@ -78,7 +78,7 @@ Spawn an `Explore` subagent (read-only, keeps catalog out of main context):
 - **description**: `Map topic to Security Pillar control + 4Cs scope`
 - **subagent_type**: `Explore`
 - **prompt** (verbatim; substitute `<REPO_ROOT>` with the repo root's absolute path):
-  > Read `<REPO_ROOT>/.claude/skills/security-topic/reference/security-pillar.md` and follow the "Matcher instructions" section at the bottom.
+  > Read `<REPO_ROOT>/.claude/skills/security-compass/reference/security-pillar.md` and follow the "Matcher instructions" section at the bottom.
   >
   > User topic: `<paste the user's exact topic statement>`
   >

@@ -1,5 +1,5 @@
 ---
-name: doc-structure
+name: doc-writing
 description: Structure any documentation the user asks you to write or update around four questions — What, Why, How, Who — so docs stay easy to scan. Invoke when the user asks to write, update, add, or revise documentation — phrases like "write docs", "update the docs", "document this", "add documentation", "write a README", "write up X", "explain this in the docs", "add a doc for", "revise the doc". Applies to new docs and edits to existing ones; the wording of the four headings can flex to fit the material as long as each question is answered.
 ---
 
@@ -25,4 +25,4 @@ When the user asks to write or update documentation, shape the content so a read
 - Don't create new documentation files unless the user asked for one; prefer editing the existing doc.
 - No emojis unless the user asks.
 - Cite `file_path:line_number` when referencing code inside a doc.
-- Honor any active `security-topic` pin.
+- Honor any active `security-compass` pin.

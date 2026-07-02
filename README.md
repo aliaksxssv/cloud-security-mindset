@@ -38,7 +38,7 @@ Each file is append-only: every new discussion adds a `## YYYY-MM-DD — <short 
 
 ## How notes get added
 
-1. **Via Claude Code.** This repo ships a project-local skill (`security-topic`) that runs inside [Claude Code](https://claude.com/claude-code). On every new topic it: (a) maps your question to a {control, scope} pair, (b) asks you to confirm, (c) surfaces any prior notes for that pair (and lists sibling-scope notes for the same control), (d) at the end offers to append a fresh summary to `memory/security/`. Conventions for Claude are documented in [`CLAUDE.md`](CLAUDE.md).
+1. **Via Claude Code.** This repo ships a project-local skill (`security-compass`) that runs inside [Claude Code](https://claude.com/claude-code). On every new topic it: (a) maps your question to a {control, scope} pair, (b) asks you to confirm, (c) surfaces any prior notes for that pair (and lists sibling-scope notes for the same control), (d) at the end offers to append a fresh summary to `memory/security/`. Conventions for Claude are documented in [`CLAUDE.md`](CLAUDE.md).
 2. **By hand.** Open the relevant `<scope>.md`, add a new `## YYYY-MM-DD — <short title>` section. Commit.
 
 ## Using the skill — examples
@@ -120,4 +120,4 @@ Security knowledge usually evaporates: it lives in Slack threads, ticket comment
 
 - [`CLAUDE.md`](CLAUDE.md) — conventions for Claude Code (and humans) working in this repo.
 - [`memory/security/README.md`](memory/security/README.md) — file format and tree organization.
-- [`.claude/skills/security-topic/`](.claude/skills/security-topic/) — the skill itself, including the full Security Pillar catalog and scope-detection cues used for topic mapping.
+- [`.claude/skills/security-compass/`](.claude/skills/security-compass/) — the skill itself, including the full Security Pillar catalog and scope-detection cues used for topic mapping.

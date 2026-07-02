@@ -59,7 +59,7 @@ Manual edits are welcome — stick to this format so the skill can keep parsing 
 
 ## How entries land here
 
-- **Automatically**: via the `security-topic` Claude Code skill in `.claude/skills/security-topic/`. When a discussion wraps up, you're asked whether to save the summary into project (shared) or user (private) memory. *Project* writes here, under the right `<domain>/<sec-id>/<scope>.md` path.
+- **Automatically**: via the `security-compass` Claude Code skill in `.claude/skills/security-compass/`. When a discussion wraps up, you're asked whether to save the summary into project (shared) or user (private) memory. *Project* writes here, under the right `<domain>/<sec-id>/<scope>.md` path.
 - **Manually**: edit the file directly.
 
 ## Why this exists
