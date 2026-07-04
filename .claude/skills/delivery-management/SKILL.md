@@ -1,6 +1,6 @@
 ---
 name: delivery-management
-description: Project delivery advisor. Use when planning projects or releases, setting goals or OKRs, prioritizing features or backlogs, decomposing epics/projects into smaller slices, negotiating scope/time/cost trade-offs, or coaching delivery leads and teams on leadership and feedback.
+description: Project delivery advisor. Use when planning projects or releases, setting goals or OKRs, prioritizing features or backlogs, decomposing epics/projects into smaller slices, negotiating scope/time/cost trade-offs, or coaching delivery leads and teams on leadership and feedback. ALSO invoked at the start of the very first conversation via CLAUDE.md handoff when no self-assessment file exists at memory/delivery/self-assessment.md — runs a skippable self-assessment of current state and constraints (company & external compliance, security team size & skills, budget posture) — and whenever the user says "run self-assessment", "resume assessment", "update the assessment", or answers a previously skipped assessment question.
 ---
 
 # Delivery Management
@@ -29,6 +29,52 @@ Ground every delivery conversation in these principles. They answer most quick q
 
 > **DISC disambiguation:** `references/servant-leadership.md` covers adapting to *other people's* DISC profiles when leading or coaching them. The agent's own voice is governed separately by the `disc-persona` skill (`.claude/skills/disc-persona/`), which already carries a servant-leadership stance — don't conflate the two.
 
+## Self-assessment — current state & constraints
+
+Delivery advice is only as good as its context. The self-assessment captures three stable dimensions in project memory at `memory/delivery/self-assessment.md` (git-tracked, shared with the team):
+
+1. **Company & compliance** — industry, and how strongly external compliance (PCI DSS, HIPAA, SOC 2, FedRAMP, …) binds the company. Regulated requirements become non-negotiable scope.
+2. **Security team** — size, capacity, and skills; determines effort feasibility and build-vs-buy.
+3. **Budget posture** — appetite for commercial tooling vs open-source; steers recommendations.
+
+(Deadlines are deliberately absent — they are per-project and asked fresh in the triangle intake below.)
+
+### When it runs
+
+- **CLAUDE.md gate handoff** — at the start of the very first conversation, when `memory/delivery/self-assessment.md` does not exist. Same session-start-gate treatment as `disc-persona` and `security-compass`.
+- **On demand** — "run self-assessment", "resume assessment", "update the assessment", or the user volunteering an answer to a previously skipped question.
+- **Pulled in by need** — when a deliverable (triangle negotiation, RICE scoring, …) requires a dimension that was skipped: ask just that one question, then update the file.
+
+### Flow
+
+1. **Summarize existing state via subagent** (skip this step when the file doesn't exist yet). Spawn an `Explore` subagent: *"Read `<REPO_ROOT>/memory/delivery/self-assessment.md`. Return (a) a ≤3-line summary of the answered sections and (b) the bullet list under `## Open questions`, verbatim. Nothing else."* The full file never enters main context.
+2. **Ask** — one `AskUserQuestion` call covering only the unanswered/skipped dimensions. Every question MUST include a **"Skip for now"** option; skipping is always legitimate — never pressure the user.
+3. **Persist via subagent.** Spawn a `general-purpose` subagent, passing the answers verbatim: it creates `memory/delivery/` if needed and writes/updates the file in the format below, returning a one-line confirmation plus the remaining open questions.
+4. **Highlight the way back.** Close with one line naming the skipped dimensions and how to resume — e.g. *"Skipped: budget posture. Say 'resume assessment' anytime — or I'll ask when a decision actually needs it."*
+
+### File format
+
+```markdown
+# Delivery self-assessment — current state & constraints
+
+## Company & compliance
+<answer>
+_Last updated: YYYY-MM-DD_
+
+## Security team
+<answer>
+_Last updated: YYYY-MM-DD_
+
+## Budget posture
+<answer>
+_Last updated: YYYY-MM-DD_
+
+## Open questions
+- <dimension> — skipped YYYY-MM-DD
+```
+
+Sections are updated **in place** (current-state facts, not a log). A skipped dimension keeps `_skipped YYYY-MM-DD_` as its body plus a bullet under `## Open questions`; both are removed once answered.
+
 ## Delegation protocol — keep the main context lean
 
 Substantial framework work MUST run in a sub-agent, not in the main conversation. This includes: drafting OKRs, RICE-scoring a backlog, decomposing an epic or project, preparing a coaching or feedback conversation, or producing a delivery plan.
@@ -43,15 +89,10 @@ The sub-agent reads the references, does the work, and returns only the finished
 
 ### Triangle intake — gather context before spawning
 
-Scope/time/cost negotiations need four context dimensions, and the sub-agent cannot ask the user for them itself. Before spawning a triangle sub-agent:
+Scope/time/cost negotiations need the self-assessment facts plus per-project specifics, and the sub-agent cannot ask the user for them itself. Before spawning a triangle sub-agent:
 
-1. **Check persisted facts.** Read `memory/delivery/company-context.md` (repo root, git-tracked) if it exists — it holds the two stable dimensions: company compliance level and security team capacity/skills.
-2. **Ask only what's missing** — one `AskUserQuestion` call (up to four questions), skipping anything already persisted or already stated in this conversation:
-   - **Company & compliance** — how strongly is the company bound by external compliance (e.g. PCI DSS, HIPAA, SOC 2, FedRAMP, none)? Regulated requirements become non-negotiable scope.
-   - **Security team** — capacity and skills of the existing team; determines effort feasibility and build-vs-buy.
-   - **Deadlines** — only when the question is project-bound; fixes the time corner and drives how scope is allocated into the timebox.
-   - **Budget** — steers open-source vs commercial recommendations.
-3. **Offer to persist the stable facts.** After the answers, offer to save/update the company & compliance and security team sections of `memory/delivery/company-context.md` (create `memory/delivery/` lazily; confirm before writing). Sections are **updated in place** — current-state facts, not a log — each ending with `_Last updated: YYYY-MM-DD_`. Deadlines and budget are per-project: never persist them.
-4. **Pass all four answers verbatim** into the sub-agent prompt alongside the `references/triangle.md` path — they are part of "the user's inputs" in the protocol above.
+1. **Pull the self-assessment** via the Explore-subagent summary (see the self-assessment flow above). If a dimension the negotiation needs is skipped or clearly stale, ask just that question now and persist the answer (flow steps 2–3).
+2. **Ask the per-project questions** in the same `AskUserQuestion` call: **deadlines** (only when the question is project-bound; fixes the time corner and drives how scope is allocated into the timebox) and a **project budget envelope** if it differs from the general budget posture. These are per-project — never persisted to the assessment file.
+3. **Pass everything verbatim** into the sub-agent prompt alongside the `references/triangle.md` path — assessment facts + per-project answers are "the user's inputs" in the protocol above.
 
 **Exception:** one-line factual questions ("what are the RICE factors?", "name the servant-leadership attributes") may be answered from the core principles above or by reading a single reference directly — no sub-agent needed.

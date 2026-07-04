@@ -43,11 +43,11 @@ memory/security/
 - One file per scope inside: `cloud.md`, `code.md`, `cluster.md`, `container.md`, `cross.md` — created on demand.
 - Domain-wide notes live under `memory/security/<domain>/_domain/<scope>.md` (`_domain` is reserved).
 - Entries are **appended** as dated sections (`## YYYY-MM-DD — <short title>`). Author comes from `git config user.name`, or `claude session` if unset.
-- Delivery context lives at `memory/delivery/company-context.md` — current-state facts (company compliance level, security team capacity/skills) used by the `delivery-management` triangle intake. Unlike the discussion logs above, its sections are **updated in place**, each ending with `_Last updated: YYYY-MM-DD_`. Created lazily on first confirmed save.
+- The delivery self-assessment lives at `memory/delivery/self-assessment.md` — current-state facts (company & external compliance, security team size & skills, budget posture) gathered by the `delivery-management` skill at the first conversation and reused by its triangle intake. Unlike the discussion logs above, its sections are **updated in place**, each ending with `_Last updated: YYYY-MM-DD_`; skipped questions are tracked under `## Open questions` and re-offered later. Created lazily on first save.
 
 ## For Claude (working conventions)
 
-- **Run the session-start gate first.** In a fresh session — or any transcript with no pin — don't start substantive work until both checks in the session-start gate section below have resolved: persona loaded/picked, then `{control, scope}` pinned (or the user explicitly chose to proceed without a control).
+- **Run the session-start gate first.** In a fresh session — or any transcript with no pin — don't start substantive work until the checks in the session-start gate section below have resolved: persona loaded/picked, `{control, scope}` pinned (or the user explicitly chose to proceed without a control), and — on the very first conversation only — the delivery self-assessment offered (every answer skippable).
 - **Honour the pin.** If a `**Active control:**` or `**Active domain:**` line appears earlier in the transcript, all subsequent work stays scoped to that `{control, scope}` pair. Cite both briefly when making non-obvious recommendations (e.g. *"aligned with SEC03-BP02 / cluster"*).
 - **Scope matters as much as control.** Don't mix advice from different scopes in one answer unless the pin is `scope: cross`. If the user's question wanders into another scope, surface the mismatch and offer to switch scope.
 - **Don't re-invoke `security-compass` mid-discussion.** Only on a fresh new-topic signal — or on a scope-only switch ("switch scope to <X>"), which uses a shorter path.
@@ -57,7 +57,7 @@ memory/security/
 
 ## Session-start gate (persona + compass)
 
-At the very start of every new conversation, before your first substantive response, run both checks below **in order** — tone first, then topic. No discussion continues until both have resolved.
+At the very start of every new conversation, before your first substantive response, run the checks below **in order** — tone, then topic, then delivery context. No discussion continues until they have resolved.
 
 ### 1. Persona check (DISC "buddy")
 
@@ -83,3 +83,12 @@ The subagent-only rule for `.claude/skills/*/reference/*.md` (see the working-co
 After the persona is resolved: if no `**Active control:**` / `**Active domain:**` line exists anywhere in the transcript, invoke the `security-compass` skill **before answering — regardless of topic**, including repo-maintenance requests. Treat the user's first substantive message as the topic statement.
 
 The discussion continues only once the skill has emitted the pin — or the user has explicitly chosen **"Proceed without a control"** (the skill's no-match step). That option is the sanctioned exit for non-security work: the clarification exchange still happens, the user decides, and the session is unblocked with an explicit *no pin* note.
+
+### 3. Delivery self-assessment (current state & constraints)
+
+After the pin is resolved, check whether `memory/delivery/self-assessment.md` exists:
+
+- **If it does not exist** (very first conversation), invoke the `delivery-management` skill's self-assessment flow: skippable questions about company & external compliance, security team size & skills, and budget posture. Answers are persisted to that file via a subagent; every question can be skipped.
+- **If it exists**, have an `Explore` subagent return its ≤3-line summary plus the `## Open questions` list — never load the full file into main context. If any questions are still open, surface them in a single line (*"2 assessment questions still open — say 'resume assessment' whenever"*) and move on. Don't re-ask.
+
+Unlike checks 1–2 this gate never blocks: skipping every question is a valid outcome. Skipped dimensions are re-offered later — on "resume assessment", or one-at-a-time when a delivery decision actually needs the missing answer.

@@ -22,7 +22,7 @@ When pressure rises — a new request, a slipped dependency, an underestimate �
 
 ## Context intake — four dimensions
 
-Triangle advice given without context is generic. The skill gathers four answers from the user before delegating (see the triangle intake in `SKILL.md`); apply each one to a specific part of the triangle:
+Triangle advice given without context is generic. The skill pulls the first three dimensions from the self-assessment in project memory (`memory/delivery/self-assessment.md`) and asks the per-project ones fresh before delegating (see the self-assessment and triangle intake in `SKILL.md`); apply each one to a specific part of the triangle:
 
 | Dimension | What it tells you | How it maps onto the triangle |
 |---|---|---|

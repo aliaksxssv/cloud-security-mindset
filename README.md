@@ -12,6 +12,8 @@ A shared team knowledge base for cloud-native security, organized along two axes
 
 The same control is a very different conversation in each scope — *least privilege* in AWS IAM is not the same as in Kubernetes RBAC, container runtime caps, or application authorization. Keeping these separate preserves precision.
 
+![How it works: a question passes through four lenses — Security Pillar control, 4Cs scope, delivery, persona — and comes back as grounded advice, saved to shared memory](images/how-it-works.png)
+
 ## Layout
 
 ```
