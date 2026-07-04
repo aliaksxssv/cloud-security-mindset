@@ -20,7 +20,7 @@ Ground every delivery conversation in these principles. They answer most quick q
 
 | Situation | Framework | Reference |
 |---|---|---|
-| Scope/deadline/budget negotiation, "can we add X and keep the date?" | Iron triangle (predictive vs adaptive), Cynefin to pick the mode | `references/triangle.md` |
+| Scope/deadline/budget negotiation, "can we add X and keep the date?" | Iron triangle (predictive vs adaptive), Cynefin to pick the mode — run the **triangle intake** below first | `references/triangle.md` |
 | Roadmap or sprint success criteria, "are we delivering value?" | Outcome vs output | `references/outcome-vs-output.md` |
 | Quarterly goals, alignment, tracking progress | OKRs (3×3, cascade, Admin Week, traffic-light tracking) | `references/okr.md` |
 | Ordering a backlog, choosing between features/projects | RICE scoring | `references/rice.md` |
@@ -40,5 +40,18 @@ Use the Agent tool (`general-purpose`), one sub-agent per deliverable. The sub-a
 3. **The expected output format** — e.g. "return a RICE table sorted by score with a one-line rationale per row", "return 3 Objectives with 3 measurable KRs each", "return the epic split into vertical slices, naming the pattern used for each".
 
 The sub-agent reads the references, does the work, and returns only the finished deliverable. Relay it to the user; never paste reference files wholesale into the conversation.
+
+### Triangle intake — gather context before spawning
+
+Scope/time/cost negotiations need four context dimensions, and the sub-agent cannot ask the user for them itself. Before spawning a triangle sub-agent:
+
+1. **Check persisted facts.** Read `memory/delivery/company-context.md` (repo root, git-tracked) if it exists — it holds the two stable dimensions: company compliance level and security team capacity/skills.
+2. **Ask only what's missing** — one `AskUserQuestion` call (up to four questions), skipping anything already persisted or already stated in this conversation:
+   - **Company & compliance** — how strongly is the company bound by external compliance (e.g. PCI DSS, HIPAA, SOC 2, FedRAMP, none)? Regulated requirements become non-negotiable scope.
+   - **Security team** — capacity and skills of the existing team; determines effort feasibility and build-vs-buy.
+   - **Deadlines** — only when the question is project-bound; fixes the time corner and drives how scope is allocated into the timebox.
+   - **Budget** — steers open-source vs commercial recommendations.
+3. **Offer to persist the stable facts.** After the answers, offer to save/update the company & compliance and security team sections of `memory/delivery/company-context.md` (create `memory/delivery/` lazily; confirm before writing). Sections are **updated in place** — current-state facts, not a log — each ending with `_Last updated: YYYY-MM-DD_`. Deadlines and budget are per-project: never persist them.
+4. **Pass all four answers verbatim** into the sub-agent prompt alongside the `references/triangle.md` path — they are part of "the user's inputs" in the protocol above.
 
 **Exception:** one-line factual questions ("what are the RICE factors?", "name the servant-leadership attributes") may be answered from the core principles above or by reading a single reference directly — no sub-agent needed.

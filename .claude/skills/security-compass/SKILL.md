@@ -1,6 +1,6 @@
 ---
 name: security-compass
-description: Anchor every discussion to BOTH (a) a specific AWS Well-Architected Security Pillar control (SECxx-BPyy) and (b) one of the 4Cs scopes — code, cloud, cluster, container (or cross). Invoke when the user signals a new topic — phrases like "new topic", "new discussion", "let's discuss", "I want to discuss", "talk about", "switch topic", "next topic", "start a discussion about", "change subject", or whole-domain phrasing like "discuss the whole <domain>", "review <domain>", "<domain> in general". The skill (1) closes the prior pinned discussion with a save prompt that lets the user choose project (shared via git) vs user (private) memory, (2) spawns an Explore subagent that maps the topic to a control AND detects scope from cues, (3) asks the user to confirm both axes, (4) loads prior notes — same control + same scope first, then sibling scopes, (5) pins {control, scope} for the rest of the discussion. Mid-discussion the user can say "switch scope to <X>" to re-pin scope without re-mapping the control.
+description: Anchor every discussion to BOTH (a) a specific AWS Well-Architected Security Pillar control (SECxx-BPyy) and (b) one of the 4Cs scopes — code, cloud, cluster, container (or cross). Invoke when the user signals a new topic — phrases like "new topic", "new discussion", "let's discuss", "I want to discuss", "talk about", "switch topic", "next topic", "start a discussion about", "change subject", or whole-domain phrasing like "discuss the whole <domain>", "review <domain>", "<domain> in general" — and ALSO at conversation start when CLAUDE.md hands off because no `**Active control:**` / `**Active domain:**` pin exists anywhere in the transcript (gate mode: the user's first substantive message is the topic, whatever it is; no substantive answer until the pin is emitted or the user explicitly proceeds without a control). The skill (1) closes the prior pinned discussion with a save prompt that lets the user choose project (shared via git) vs user (private) memory, (2) spawns an Explore subagent that maps the topic to a control AND detects scope from cues, (3) asks the user to confirm both axes, (4) loads prior notes — same control + same scope first, then sibling scopes, (5) pins {control, scope} for the rest of the discussion. Mid-discussion the user can say "switch scope to <X>" to re-pin scope without re-mapping the control.
 ---
 
 # AWS Security Topic Anchor (control × scope)
@@ -16,6 +16,7 @@ Trigger when the user opens a new line of work:
 - "switch topic", "next topic", "change subject"
 - "start a discussion about …"
 - whole-domain phrasing: "discuss the whole <domain>", "review <domain>", "<domain> in general", "everything about <domain>"
+- **CLAUDE.md gate handoff**: fresh session (or no `**Active control:**` / `**Active domain:**` pin anywhere in the transcript) and the user sends their first substantive message — whatever the topic, no explicit new-topic phrase needed. Treat that message as the topic statement. In gate mode Step 1 naturally no-ops (there is no prior pin to close).
 
 Also handle the **scope-only switch** mid-discussion: "switch scope to <code|cloud|cluster|container|cross>". In that case skip Steps 1–3 and 5; just re-emit the pin with the new scope and re-run Step 4.
 
@@ -31,6 +32,8 @@ Do **not** re-invoke from scratch for follow-up turns inside an already-pinned d
   the auto-memory directory named in the memory section of the system prompt (`<auto-memory-dir>` below).
 
 ## Workflow
+
+**Hard rule — the pin gates the discussion.** Do not answer the user's underlying question until Step 6 has emitted the pin, or the user has explicitly chosen **Proceed without a control** in Step 5. This is the compass counterpart of the persona gate in CLAUDE.md: clarify first, then work.
 
 ### Step 1 — Close out the previous discussion (if one is pinned)
 
@@ -155,13 +158,15 @@ If nothing exists at any of those paths, say so briefly and continue.
 
 ### Step 5 — No-match handling
 
-If `confidence: low` or the subagent can't pick a usable BP/domain:
+If `confidence: low` or the subagent can't pick a usable BP/domain — including when the topic is not a security topic at all (repo maintenance, skill editing, tooling questions), which the gate handoff makes a routine case:
 
 1. Surface the closest pillar/domain.
 2. `AskUserQuestion`:
    - **Force-map to closest BP** (list 1–2 from `alternatives`)
-   - **Proceed without a control** — explicitly note *no SEC control pinned for this discussion*; skip Step 4 and Step 6 pinning
+   - **Proceed without a control** — explicitly note *no SEC control pinned for this discussion*; skip Step 4 and Step 6 pinning. Mark this option *(Recommended)* and list it first when the topic is clearly not a security topic, so the opt-out is one click.
    - **Rephrase the topic** → re-run Step 2
+
+Choosing **Proceed without a control** satisfies the gate: the clarification exchange happened, the user decided. Note *no pin* explicitly and continue with normal work.
 
 ### Step 6 — Pin {control, scope}
 

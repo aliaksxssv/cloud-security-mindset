@@ -9,7 +9,7 @@ Every discussion is pinned to a `{control, scope}` pair. The skill at `.claude/s
 
 ## The skill: `security-compass`
 
-Activates whenever the user signals a new topic (e.g. "new topic", "let's discuss", "switch topic", or whole-domain phrasing like "review data protection"). Workflow:
+Activates whenever the user signals a new topic (e.g. "new topic", "let's discuss", "switch topic", or whole-domain phrasing like "review data protection") — and at conversation start whenever no pin exists yet (see the session-start gate below). Workflow:
 
 1. **Closes the previous discussion** — drafts a 3–6 bullet summary and asks whether to save it. Destinations:
    - **Project memory** (shared, git-tracked) → `memory/security/<domain>/<sec-id>/<scope>.md` *(appended, never overwritten)*.
@@ -43,9 +43,11 @@ memory/security/
 - One file per scope inside: `cloud.md`, `code.md`, `cluster.md`, `container.md`, `cross.md` — created on demand.
 - Domain-wide notes live under `memory/security/<domain>/_domain/<scope>.md` (`_domain` is reserved).
 - Entries are **appended** as dated sections (`## YYYY-MM-DD — <short title>`). Author comes from `git config user.name`, or `claude session` if unset.
+- Delivery context lives at `memory/delivery/company-context.md` — current-state facts (company compliance level, security team capacity/skills) used by the `delivery-management` triangle intake. Unlike the discussion logs above, its sections are **updated in place**, each ending with `_Last updated: YYYY-MM-DD_`. Created lazily on first confirmed save.
 
 ## For Claude (working conventions)
 
+- **Run the session-start gate first.** In a fresh session — or any transcript with no pin — don't start substantive work until both checks in the session-start gate section below have resolved: persona loaded/picked, then `{control, scope}` pinned (or the user explicitly chose to proceed without a control).
 - **Honour the pin.** If a `**Active control:**` or `**Active domain:**` line appears earlier in the transcript, all subsequent work stays scoped to that `{control, scope}` pair. Cite both briefly when making non-obvious recommendations (e.g. *"aligned with SEC03-BP02 / cluster"*).
 - **Scope matters as much as control.** Don't mix advice from different scopes in one answer unless the pin is `scope: cross`. If the user's question wanders into another scope, surface the mismatch and offer to switch scope.
 - **Don't re-invoke `security-compass` mid-discussion.** Only on a fresh new-topic signal — or on a scope-only switch ("switch scope to <X>"), which uses a shorter path.
@@ -53,9 +55,13 @@ memory/security/
 - **The pin is transcript-only.** It doesn't survive new sessions. Durable knowledge belongs in `memory/security/<domain>/<sec-id>/<scope>.md`.
 - **Project vs user memory.** Default save destination is project (shared) — the whole point of this repo is collaboration. Only fall back to user memory when the user explicitly chooses it or the content is personal/private.
 
-## Agent persona (DISC "buddy")
+## Session-start gate (persona + compass)
 
-At the very start of every new conversation, before your first substantive response, check for `agent_persona.md` in your auto-memory directory (the path is given in the "auto memory" section of your system prompt).
+At the very start of every new conversation, before your first substantive response, run both checks below **in order** — tone first, then topic. No discussion continues until both have resolved.
+
+### 1. Persona check (DISC "buddy")
+
+Check for `agent_persona.md` in your auto-memory directory (the path is given in the "auto memory" section of your system prompt).
 
 - **If it exists**, `Read` it once and adopt the described tone for the rest of the session. Do not announce the load; just start speaking in that voice.
 - **If it does not exist**, invoke the `disc-persona` skill at `.claude/skills/disc-persona/` so the user can pick one. The skill writes the file and hands back the adopted persona block.
@@ -71,3 +77,9 @@ The persona modifies **tone and style only**. It never overrides these guardrail
 The user can change persona at any time by saying "change buddy" / "смени бадди" — those phrases trigger the `disc-persona` skill, which overwrites the persona file. To reset to no persona, delete `agent_persona.md`.
 
 The subagent-only rule for `.claude/skills/*/reference/*.md` (see the working-conventions section above) applies here too: `personas.md` is read by the skill's subagents, never main context.
+
+### 2. Compass check ({control, scope} pin)
+
+After the persona is resolved: if no `**Active control:**` / `**Active domain:**` line exists anywhere in the transcript, invoke the `security-compass` skill **before answering — regardless of topic**, including repo-maintenance requests. Treat the user's first substantive message as the topic statement.
+
+The discussion continues only once the skill has emitted the pin — or the user has explicitly chosen **"Proceed without a control"** (the skill's no-match step). That option is the sanctioned exit for non-security work: the clarification exchange still happens, the user decides, and the session is unblocked with an explicit *no pin* note.
