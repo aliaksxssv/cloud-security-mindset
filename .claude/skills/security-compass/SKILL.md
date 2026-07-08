@@ -30,6 +30,8 @@ Do **not** re-invoke from scratch for follow-up turns inside an already-pinned d
   `memory/security/<domain-slug>/<sec-id-lowercased>/<scope>.md`
 - User (private) memory directory:
   the auto-memory directory named in the memory section of the system prompt (`<auto-memory-dir>` below).
+- External doc index (maintained by the `doc-context` skill, read only by subagents):
+  `memory/docs/index/<domain-slug>.md` and the registry `memory/docs/sources.md`.
 
 ## Workflow
 
@@ -156,7 +158,15 @@ After confirmation, inspect the filesystem (read-only Bash):
 
 If nothing exists at any of those paths, say so briefly and continue.
 
-### Step 5 — No-match handling
+### Step 4b — External doc context (if a doc index exists)
+
+After prior notes, check for `memory/docs/index/<domain-slug>.md` (read-only `ls`). If present:
+
+1. Spawn an `Explore` subagent: *"Read `<REPO_ROOT>/memory/docs/index/<domain-slug>.md`. Return only the entries under `## <SECxx-BPyy>`, verbatim — link, anchor, one-line summary. Nothing else."* (Domain mode: return all sections.)
+2. If entries came back, spawn a second `Explore` subagent to fetch them (WebFetch for public URLs; Bash `curl` per the access hint in `memory/docs/sources.md` for authenticated ones) and return a **≤10-line digest** of the requirements / current state relevant to the pinned pair.
+3. Surface the digest as a compact **External context** block next to **Prior context**, citing each source link. Report failed fetches in one line and continue — never block the discussion on an unreachable doc.
+
+If the index folder doesn't exist, skip silently (the `doc-context` skill hasn't been initialized). On a scope-only switch, skip Step 4b — index entries are per control, not per scope, so the digest is unchanged.
 
 If `confidence: low` or the subagent can't pick a usable BP/domain — including when the topic is not a security topic at all (repo maintenance, skill editing, tooling questions), which the gate handoff makes a routine case:
 
